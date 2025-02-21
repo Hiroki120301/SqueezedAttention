@@ -45,6 +45,11 @@ if __name__ == "__main__":
     args = parser.parse_args()
     DEV = torch.device(f"cuda:{args.device}")
 
+    # cuda GPU avilability
+    print(f'TORCH AVAILABLE: {torch.cuda.is_available()}')  # Should return True
+    print(f'NUMBER OF CUDA DEVICE: {torch.cuda.device_count()}')  # Should show at least 1
+    print(f'DEVICE NAME: {torch.cuda.get_device_name(0)}')  # Should show 'A100'
+
     # get maxlen and model path
     model2path = json.load(open("LongBench/config/model2path.json", "r"))
     model2maxlen = json.load(open("LongBench/config/model2maxlen.json", "r"))
@@ -88,7 +93,7 @@ if __name__ == "__main__":
         prompt_only = prompt_only_format.format(**data_all[i])
 
         # perform truncation and get truncated shared prefix length
-        prompt, truncated_shared_prefix_length = truncate_fn(prompt, prompt_only, tokenizer, max_length, dataset, DEV)
+        prompt, truncated_shared_prefix_length = truncate_fn(prompt, prompt_only, tokenizer, max_length, dataset, DEV, model_name=args.model)
         shared_prefix_length[i] = truncated_shared_prefix_length
         assert (truncated_shared_prefix_length > 0) # else, truncated part of input context as well
 
@@ -112,7 +117,7 @@ if __name__ == "__main__":
         layer.self_attn.register_forward_hook(get_attention_scores)
 
     # load dataset format
-    for dataidx, d in enumerate(tqdm(data)):
+    for dataidx, d in enumerate(tqdm(data, file=sys.stdout)):
         all_queries_layers = []
         all_keys_layers = []
         all_values_layers = []
@@ -121,7 +126,7 @@ if __name__ == "__main__":
         prompt_only = prompt_only_format.format(**d)
 
         # get truncated input prompt
-        prompt, _ = truncate_fn(prompt, prompt_only, tokenizer, max_length, dataset, DEV)
+        prompt, _ = truncate_fn(prompt, prompt_only, tokenizer, max_length, dataset, DEV, model_name=args.model)
         input_ids = tokenizer(prompt, truncation=False, return_tensors="pt").input_ids.to(DEV)
 
         print(f"dataidx: {dataidx} | length of input_ids: {len(input_ids[0])}")

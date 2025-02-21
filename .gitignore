@@ -1,0 +1,68 @@
+# Ignore Python compiled files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Ignore virtual environments
+venv/
+.env/
+*.venv
+
+# Ignore logs and outputs
+squeezed-attn_output.txt
+squeezed-attn_error.txt
+*.log
+
+# Ignore model-related artifacts
+*.h5
+*.ckpt
+*.pth
+*.pt
+*.onnx
+
+# Ignore temporary files
+*.tmp
+*.swp
+*.swo
+
+# Ignore datasets and large generated files
+data/
+*.csv
+*.tsv
+*.jsonl
+*.pickle
+
+# Ignore figures and plots
+figs/
+*.png
+*.gif
+*.jpg
+*.jpeg
+*.pdf
+
+# Ignore package build artifacts
+*.egg-info/
+dist/
+build/
+
+# Ignore Docker files (if using Docker)
+docker/
+*.dockerfile
+
+# Ignore SLURM job logs
+*.out
+*.err
+
+# Ignore environment configuration
+.env
+.DS_Store
+
+# Ignore dependency installs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Ignore editor-specific files
+.vscode/
+.idea/
+*.iml
