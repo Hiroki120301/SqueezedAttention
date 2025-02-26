@@ -2,9 +2,9 @@
 #SBATCH --job-name="squeezed-attn"
 #SBATCH --account=bdiq-delta-gpu
 #SBATCH --partition=gpuA100x4
-#SBATCH --gres=gpu:a100:4
-#SBATCH --cpus-per-task=32
-#SBATCH --mem=32G
+#SBATCH --gres=gpu:a100:1
+#SBATCH --cpus-per-task=16
+#SBATCH --mem=16G
 #SBATCH --time=10:00:00
 #SBATCH --output=%x_output.txt
 #SBATCH --error=%x_error.txt
@@ -14,10 +14,8 @@
 # cd ..
 # pip install -e .
 
-# conda install triton
-# conda install pytest
-# conda install scikit-learn
-# conda install cupy
+# conda install triton pytest scikit-learn cupy cuml
+# pip install sentencepiece protobuf
 
 # echo "Working directory is: $(pwd)"
 

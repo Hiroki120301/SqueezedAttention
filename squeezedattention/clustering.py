@@ -39,6 +39,7 @@ def run_clustering(tdict, num_clusters, observation_window=100, print_log=False,
         if print_log:
             print('layer: ', layer_num)
 
+        # squeeze removes dimension of size 1
         keys = tdict[layer_num].squeeze(0).float().to(device)
 
         K = num_clusters
@@ -58,6 +59,7 @@ def run_clustering(tdict, num_clusters, observation_window=100, print_log=False,
             head_data = keys[H]
             data_normalized = F.normalize(head_data, p=2, dim=-1)
 
+            # convert into DLPack capsule for faster computation
             dlpack_tensor = to_dlpack(data_normalized)
             data_cp = fromDlpack(dlpack_tensor)
 

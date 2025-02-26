@@ -57,7 +57,7 @@ if __name__ == "__main__":
     max_length = model2maxlen[args.model]
 
     # load model
-    tokenizer = AutoTokenizer.from_pretrained(model_path, use_fast=False)
+    tokenizer = AutoTokenizer.from_pretrained(model_path, use_fast=False) # tokenizer to convert words into tokens 
     config = LlamaConfig.from_pretrained(model_path)
     config.return_qkv_states = True
     config._flash_attn_2_enabled = True
@@ -86,8 +86,9 @@ if __name__ == "__main__":
     prompt_only_format = dataset2prompt[dataset_name_prompt]
     data_all = [data_sample for data_sample in data]
 
-    # different prefix profiling offline (also need to account for truncation)
+    # The shared prefix length tells us how much of the prompt is constant across all inputs before the query-specific portion starts
     shared_prefix_length = {}
+    # different prefix profiling offline (also need to account for truncation)
     for i in range(len(data_all)):
         prompt = prompt_format.format(**data_all[i])
         prompt_only = prompt_only_format.format(**data_all[i])
@@ -105,6 +106,8 @@ if __name__ == "__main__":
         _, qkv, _ = out
         queries, keys, values = qkv
         sp_len = shared_prefix_length[dataidx]
+
+        # only shared prefix portion of q, k, and v are considered
         queries = queries[:,:,:sp_len]
         keys = keys[:,:,:sp_len]
         values = values[:,:,:sp_len]
@@ -127,12 +130,21 @@ if __name__ == "__main__":
 
         # get truncated input prompt
         prompt, _ = truncate_fn(prompt, prompt_only, tokenizer, max_length, dataset, DEV, model_name=args.model)
-        input_ids = tokenizer(prompt, truncation=False, return_tensors="pt").input_ids.to(DEV)
+
+        # tokenize the input sequence
+        input = tokenizer(prompt, truncation=False, return_tensors="pt")
+
+        print(f'INPUT: {input}')
+        print(f'input_ids: {input["input_ids"].tolist()}')
+        print(f'attention_mask: {input["attention_mask"].tolist()}')
+
+        input_ids = input.input_ids.to(DEV)
 
         print(f"dataidx: {dataidx} | length of input_ids: {len(input_ids[0])}")
         print(f"dataidx: {dataidx} | shared_prefix_length: {shared_prefix_length[dataidx]}")
 
         # run generation
+        # the forward pass during token generation activates all attention layers.
         with torch.no_grad():
             generated_ids = model.generate(
                 input_ids,
